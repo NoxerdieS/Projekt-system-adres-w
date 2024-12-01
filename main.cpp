@@ -3,12 +3,6 @@
 
 using namespace std;
 
-struct Interest {
-    int id;
-
-    string name;
-};
-
 struct Person {
     int id;
 
@@ -16,28 +10,17 @@ struct Person {
     string surname;
     string address;
     string email;
-};
 
-struct PersonHasInterests {
-    int personId;
-    int interestId;
-};
-
-struct PrimaryKeyMetadata {
-    int lastPersonId;
-    int lastInterestId;
+    string[] hobbies;
 };
 
 struct Database {
-    PrimaryKeyMetadata metadata;
-
-    Interest[] interests;
+    int nextPersonId;
     Person[] people;
-    PersonHasInterests[] personHasInterests;
 };
 
-Database* LoadDatabase() {
-    // TODO
+Database LoadDatabase() {
+
 }
 
 void SaveDatabase(Database database) {
