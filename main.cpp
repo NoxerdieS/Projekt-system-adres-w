@@ -5,6 +5,7 @@
 using namespace std;
 
 struct Person {
+    int id;
     string name;
     string surname;
     string address;
@@ -13,41 +14,163 @@ struct Person {
 };
 
 void AddPerson(string name, string surname, string address, string email, string* hobbies) {
-    Person person;
-    person.name = name;
-    person.surname = surname;
-    person.address = address;
-    person.email = email;
-    person.hobbies = hobbies;
+    ifstream infile("database.txt");
+    int lastID = 0;
+    string line;
+
+    if (infile.is_open()) {
+        while (getline(infile, line)) {
+            size_t pos = line.find(';');
+            if (pos != string::npos) {
+                lastID = stoi(line.substr(0, pos));
+            }
+        }
+        infile.close();
+    }
+
+    int newID = lastID + 1;
 
     ofstream outfile("database.txt", ios::app);
     if (outfile.is_open()) {
-        outfile << person.name << ";"
-                << person.surname << ";"
-                << person.address << ";"
-                << person.email << ";";
+        outfile << newID << ";"
+                << name << ";"
+                << surname << ";"
+                << address << ";"
+                << email << ";";
 
         outfile << "[";
-        for (int i = 0; i < 20 && !person.hobbies[i].empty(); ++i) {
-            outfile << person.hobbies[i];
-            if (i < 19 && !person.hobbies[i + 1].empty()) {
+        for (int i = 0; i < 20 && !hobbies[i].empty(); ++i) {
+            outfile << hobbies[i];
+            if (i < 19 && !hobbies[i + 1].empty()) {
                 outfile << ", ";
             }
         }
         outfile << "]" << endl;
 
-        cout << "Poprawnie dodano użytkownika do bazy" << endl;
+        cout << "Poprawnie dodano osobę o ID " << newID << " do bazy"<< endl;
     } else {
         cout << "Wystąpił problem z plikiem" << endl;
     }
     outfile.close();
 }
 
+
+
+void DeletePerson(int id) {
+    ifstream infile("database.txt");
+    ofstream outfile("temp.txt");
+    string line;
+    bool found = false;
+
+    if (infile.is_open() && outfile.is_open()) {
+        while (getline(infile, line)) {
+            size_t pos = line.find(';');
+            if (pos != string::npos) {
+                int currentID = stoi(line.substr(0, pos));
+                if (currentID == id) {
+                    found = true;
+                    cout << "Znaleziono rekord: " << line << endl;
+                    cout << "Czy na pewno chcesz usunąć ten rekord? (t/n): ";
+                    char choice;
+                    cin >> choice;
+                    if (choice == 'n' || choice == 'N') {
+                        outfile << line << endl;
+                        cout << "Rekord nie został usunięty." << endl;
+                        continue;
+                    } else if (choice == 't' || choice == 'T') {
+                        cout << "Rekord został pomyślnie usunięty." << endl;
+                        continue;
+                    }
+                }
+            }
+            outfile << line << endl;
+        }
+        infile.close();
+        outfile.close();
+
+        if (found) {
+            remove("database.txt");
+            rename("temp.txt", "database.txt");
+        } else {
+            cout << "Nie znaleziono rekordu o ID: " << id << endl;
+            remove("temp.txt");
+        }
+    } else {
+        cout << "Wystąpił problem z otwarciem pliku." << endl;
+    }
+}
+
+void EditPerson(int id) {
+    ifstream infile("database.txt");
+    ofstream outfile("temp.txt");
+    string line;
+    bool found = false;
+
+    if (infile.is_open() && outfile.is_open()) {
+        while (getline(infile, line)) {
+            size_t pos = line.find(';');
+            if (pos != string::npos) {
+                int currentID = stoi(line.substr(0, pos));
+                if (currentID == id) {
+                    found = true;
+                    cout << "Znaleziono rekord: " << line << endl;
+
+                    string name, surname, address, email, hobbies;
+                    cout << "Podaj nowe dane. Jeśli chcesz zachować istniejące, zostaw pole puste." << endl;
+
+                    cout << "Nowe imię: ";
+                    getline(cin, name);
+                    cout << "Nowe nazwisko: ";
+                    getline(cin, surname);
+                    cout << "Nowy adres: ";
+                    getline(cin, address);
+                    cout << "Nowy email: ";
+                    getline(cin, email);
+                    cout << "Nowe zainteresowania (oddzielone przecinkami): ";
+                    getline(cin, hobbies);
+
+                    string updatedRecord = to_string(id) + ";";
+
+                    size_t firstSemicolon = line.find(';');
+                    size_t secondSemicolon = line.find(';', firstSemicolon + 1);
+                    size_t thirdSemicolon = line.find(';', secondSemicolon + 1);
+                    size_t fourthSemicolon = line.find(';', thirdSemicolon + 1);
+
+                    updatedRecord += (name.empty() ? line.substr(firstSemicolon + 1, secondSemicolon - firstSemicolon - 1) : name) + ";";
+                    updatedRecord += (surname.empty() ? line.substr(secondSemicolon + 1, thirdSemicolon - secondSemicolon - 1) : surname) + ";";
+                    updatedRecord += (address.empty() ? line.substr(thirdSemicolon + 1, fourthSemicolon - thirdSemicolon - 1) : address) + ";";
+                    updatedRecord += (email.empty() ? line.substr(fourthSemicolon + 1, line.find(';', fourthSemicolon + 1) - fourthSemicolon - 1) : email) + ";";
+                    updatedRecord += (hobbies.empty() ? line.substr(line.find('[', fourthSemicolon) + 1, line.find(']') - line.find('[', fourthSemicolon) - 1) : hobbies);
+
+                    outfile << updatedRecord << endl;
+                    cout << "Rekord został zaktualizowany." << endl;
+                    continue;
+                }
+            }
+            outfile << line << endl;
+        }
+        infile.close();
+        outfile.close();
+
+        if (found) {
+            remove("database.txt");
+            rename("temp.txt", "database.txt");
+        } else {
+            cout << "Nie znaleziono rekordu o ID: " << id << endl;
+            remove("temp.txt");
+        }
+    } else {
+        cout << "Wystąpił problem z otwarciem pliku." << endl;
+    }
+}
+
+
 void DisplayDatabase() {
-    cout << endl;
     ifstream file("database.txt", ios::in);
     if (file.is_open()) {
         string line;
+        cout << "ID;Imię;Nazwisko;Adres;Email;Zainteresowania" << endl;
+        cout << "------------------------------------------" << endl;
         while (getline(file, line)) {
             cout << line << endl;
         }
@@ -55,23 +178,86 @@ void DisplayDatabase() {
     } else {
         cout << "Wystąpił problem z plikiem" << endl;
     }
-    cout << endl;
 }
+
+void SearchPerson() {
+    ifstream infile("database.txt");
+    string searchTerm, line;
+    int choice;
+
+    if (infile.is_open()) {
+        cout << "Wybierz parametr wyszukiwania:" << endl;
+        cout << "1. ID" << endl;
+        cout << "2. Imię" << endl;
+        cout << "3. Nazwisko" << endl;
+        cout << "4. Email" << endl;
+        cout << "5. Inne (adres lub zainteresowania)" << endl;
+        cout << "Twój wybór: ";
+        cin >> choice;
+        cin.ignore();
+
+        cout << "Podaj wartość do wyszukania: ";
+        getline(cin, searchTerm);
+
+        bool found = false;
+        cout << "Wyniki wyszukiwania:" << endl;
+        while (getline(infile, line)) {
+            bool matches = false;
+
+            switch (choice) {
+                case 1: {
+                    size_t pos = line.find(';');
+                    if (pos != string::npos) {
+                        string id = line.substr(0, pos);
+                        matches = (id == searchTerm);
+                    }
+                    break;
+                }
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                    matches = (line.find(searchTerm) != string::npos);
+                break;
+                default:
+                    cout << "Niepoprawny wybór." << endl;
+                infile.close();
+                return;
+            }
+
+            if (matches) {
+                cout << line << endl;
+                found = true;
+            }
+        }
+
+        if (!found) {
+            cout << "Brak wyników dla podanego kryterium." << endl;
+        }
+        infile.close();
+    } else {
+        cout << "Wystąpił problem z otwarciem pliku." << endl;
+    }
+}
+
+
 
 int MenuDisplay() {
     int choice;
     do {
         cout << "Menu: "<< endl;
         cout << "1. Dodaj osobę do bazy" << endl;
-        cout << "2. Usuń osobę do bazy" << endl;
+        cout << "2. Usuń osobę z bazy" << endl;
         cout << "3. Edytuj osobę" << endl;
         cout << "4. Wyświetl bazę" << endl;
         cout << "5. Grupuj po zainteresowaniach" << endl;
-        cout << "6. Wyjdź" << endl;
+        cout << "6. Wyszukaj osobę" << endl;
+        cout << "7. Wyjdź" << endl;
         cout << "Wybór: ";
         cin >> choice;
         switch (choice) {
             case 1: {
+                int id;
                 string name;
                 string surname;
                 string address;
@@ -102,24 +288,37 @@ int MenuDisplay() {
                 delete[] hobbies;
                 break;
             }
-            case 2:
-                //DeletePerson()
+            case 2: {
+                int id;
+                cout<<"Podaj id osoby do usunięcia: ";
+                cin >> id;
+                DeletePerson(id);
                 break;
-            case 3:
-                //EditPerson()
+            }
+            case 3: {
+                int id;
+                cout<<"Podaj id osoby do edycji: ";
+                cin >> id;
+                EditPerson(id);
                 break;
+            }
             case 4:
                 DisplayDatabase();
                 break;
             case 5:
                 //AutomaticGrouping()
                 break;
-            case 6:
+            case 6: {
+                SearchPerson();
+                break;
+            }
+
+            case 7:
                 return 0;
             default:
                 cout << "Wybrano złą opcję" << endl;
         }
-    }while (choice != 6);
+    }while (choice != 7);
 
 }
 
@@ -128,94 +327,3 @@ int main() {
     MenuDisplay();
     return 0;
 }
-
-
-// struct Database {
-//     int nextPersonId;
-//     Person* people = new Person[100];
-//     int peopleCount = 0;
-// };
-//
-//
-// void AddPerson(Database* database, Person person) {
-//     database->people[database->peopleCount] = person;
-//     database->peopleCount++;
-// }
-//
-// string* SplitStringByDelimiter(string payload, char delimiter) {
-//     string* splitted = new string[2];
-//
-//     for (int i = 0; i < payload.length(); i++) {
-//         if (payload[i] == delimiter) {
-//             splitted[0] = payload.substr(0, i);
-//             payload = payload.substr(i + 1, payload.length() - i - 1);
-//             i = 0;
-//         }
-//     }
-//
-//     return splitted;
-// }
-//
-// void LoadDatabase(Database* database, int peopleCount) {
-//     ifstream file("database.csv");
-//
-//     if (!file) {
-//         cerr << "Wystąpił błąd podczas odczytywania bazy danych." << endl;
-//         exit(1);
-//     }
-//
-//     database->nextPersonId = 0;
-//     database->peopleCount = 0;
-//     database->people = new Person[2];
-//
-//     string line;
-//     while (getline(file, line)) {
-//         string* splittedLine = SplitStringByDelimiter(line, ';');
-//
-//         if (splittedLine->size() != 6) {
-//             cerr << "Niepoprawny format wiersza w bazie danych: \"" << line << "\"" << endl;
-//             exit(1);
-//         }
-//
-//         Person* loadedPerson = new Person();
-//         loadedPerson->id = stoi(splittedLine[0]); // wywali błąd
-//         loadedPerson->name = splittedLine[1];
-//         loadedPerson->surname = splittedLine[2];
-//         loadedPerson->address = splittedLine[3];
-//         loadedPerson->hobbys = SplitStringByDelimiter(splittedLine[4], ',');
-//
-//         AddPerson(database, loadedPerson);
-//     }
-//
-//     // sprawdź czy ID nie są zdublowane
-//     for (int i = 0; i < sizeof(database->people); i++) {
-//         for (int j = 0; j < sizeof(database->people); j++) {
-//             if (j != 0) { // żeby nie sprawdzać tego samego ID
-//                 if (database->people[i]->id == database->people[j]->id) {
-//                     cerr << "Zduplikowane ID w bazie danych: " << database->people[i]->id << endl;
-//                     exit(1);
-//                 }
-//             }
-//         }
-//     }
-// }
-//
-// void SaveDatabase(Database* database) {
-//     ofstream file("database.csv");
-//
-//     if (!file) {
-//         cerr << "Wystąpił błąd podczas zapisywania bazy danych." << endl;
-//         exit(1);
-//     }
-//
-//     for (int i = 0; i < sizeof(database->people); i++) {
-//         file << database->people[i]->id << ";";
-//         file << database->people[i]->name << ";";
-//         file << database->people[i]->surname << ";";
-//         file << database->people[i]->address << ";";
-//         for (int j = 0; j < sizeof(database->people[i]->hobbies); j++) {
-//             file << database->people[i]->hobbies[j] << ",";
-//         }
-//         file << endl;
-//     }
-// }

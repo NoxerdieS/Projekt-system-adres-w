@@ -34,7 +34,7 @@ Wyszukiwanie osób z co najmniej jednym wspólnym zainteresowaniem.
 Tworzenie dynamicznych grup na podstawie podobieństwa zainteresowań, np. przez porównanie zestawów zainteresowań dwóch osób.
 
 **Obsługa plików:**
-Zapisywanie danych w pliku CSV, gdzie każda linia zawiera dane osoby (imię, adres, email, zainteresowania rozdzielone przecinkami).
+Zapisywanie danych w pliku txt, gdzie każda linia zawiera dane osoby (imię, nazwisko, adres, email, zainteresowania rozdzielone przecinkami).
 Wczytywanie danych z pliku i ich walidacja.
 
 **Interfejs użytkownika:**
