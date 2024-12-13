@@ -1,4 +1,4 @@
-# Projekt system adresow
+# Projekt system adresów
 Ogólny opis implementacji systemu zarządzającego zbiorem adresów osób, z automatycznym grupowaniem po zainteresowaniach:
 
 ## 1. Funkcjonalności systemu
@@ -21,7 +21,7 @@ Tworzenie grup osób na podstawie wspólnych zainteresowań.
 Algorytm analizuje listy zainteresowań i grupuje osoby z co najmniej jednym wspólnym zainteresowaniem.
 
 **Eksport i import danych:**
-Zapis i odczyt bazy danych z pliku w formacie tekstowym lub CSV, co pozwala na trwałe przechowywanie informacji.
+Zapis i odczyt bazy danych z pliku w formacie tekstowym, co pozwala na trwałe przechowywanie informacji.
 
 ## 2. Kluczowe komponenty implementacji
 
@@ -44,5 +44,3 @@ Obsługa wejścia i walidacja wprowadzonych danych.
 **Moduł wyszukiwania:**
 Filtrowanie osób na podstawie wybranych kryteriów, np. wyszukiwanie wszystkich osób interesujących się "programowaniem".
 
-**Modularność:**
-Podział kodu na logiczne moduły: osobna klasa dla osób (Person), obsługi bazy danych (Database), i logiki grupowania (GroupManager).
