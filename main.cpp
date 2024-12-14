@@ -180,6 +180,71 @@ void DisplayDatabase() {
     }
 }
 
+void GroupByHobbies() {
+    ifstream infile("database.txt");
+    const int MAX_HOBBIES = 100;
+    const int MAX_PEOPLE = 100;
+
+    string hobbies[MAX_HOBBIES];
+    string groupedPeople[MAX_HOBBIES][MAX_PEOPLE];
+    int hobbyCounts[MAX_HOBBIES] = {0};
+    int hobbyIndex = 0;
+
+    if (infile.is_open()) {
+        string line;
+
+        while (getline(infile, line)) {
+            size_t idPos = line.find(';');
+            size_t hobbyStart = line.find('[', idPos);
+            size_t hobbyEnd = line.find(']', hobbyStart);
+
+            if (hobbyStart != string::npos && hobbyEnd != string::npos) {
+                string idName = line.substr(0, line.find(';', idPos + 1));
+                string hobbiesList = line.substr(hobbyStart + 1, hobbyEnd - hobbyStart - 1);
+
+                size_t start = 0, end;
+                while ((end = hobbiesList.find(',', start)) != string::npos || start < hobbiesList.length()) {
+                    string hobby = hobbiesList.substr(start, (end == string::npos ? hobbiesList.length() : end) - start);
+                    hobby = hobby.substr(hobby.find_first_not_of(" "));
+
+                    bool found = false;
+                    int foundIndex = -1;
+                    for (int i = 0; i < hobbyIndex; ++i) {
+                        if (hobbies[i] == hobby) {
+                            found = true;
+                            foundIndex = i;
+                            break;
+                        }
+                    }
+
+                    if (!found) {
+                        hobbies[hobbyIndex] = hobby;
+                        foundIndex = hobbyIndex++;
+                    }
+
+                    groupedPeople[foundIndex][hobbyCounts[foundIndex]++] = idName;
+
+                    if (end == string::npos) break;
+                    start = end + 1;
+                }
+            }
+        }
+        infile.close();
+
+        cout << "Grupowanie według zainteresowań:" << endl;
+        for (int i = 0; i < hobbyIndex; ++i) {
+            cout << hobbies[i] << ":" << endl;
+            for (int j = 0; j < hobbyCounts[i]; ++j) {
+                cout << "  - " << groupedPeople[i][j] << endl;
+            }
+        }
+    } else {
+        cout << "Wystąpił problem z otwarciem pliku." << endl;
+    }
+}
+
+
+
 void SearchPerson() {
     ifstream infile("database.txt");
     string searchTerm, line;
@@ -218,7 +283,7 @@ void SearchPerson() {
                 case 4:
                 case 5:
                     matches = (line.find(searchTerm) != string::npos);
-                break;
+                    break;
                 default:
                     cout << "Niepoprawny wybór." << endl;
                 infile.close();
@@ -306,7 +371,7 @@ int MenuDisplay() {
                 DisplayDatabase();
                 break;
             case 5:
-                //AutomaticGrouping()
+                GroupByHobbies();
                 break;
             case 6: {
                 SearchPerson();
