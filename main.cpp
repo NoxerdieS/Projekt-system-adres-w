@@ -28,11 +28,25 @@ string getInput(const string& prompt) {
     return input;
 }
 
-void AddPerson(string name, string surname, string address, string email, string* hobbies) {
+void AddPerson() {
     ifstream infile("database.txt");
     int lastID = 0;
     string line;
+    string name, surname, address, email;
+    string* hobbies = new string[20];
+    int x;
+    cout << "Możesz wpisać \"wyjdź\" w każdym momencie, aby wrócić do menu"<<endl;
+    name = getInput("Podaj imię: ");
+    surname = getInput("Podaj nazwisko: ");
+    address = getInput("Podaj adres: ");
+    email = getInput("Podaj email: ");
+    cout << "Ile zainteresowań chcesz dodać: ";
+    cin >> x;
+    cin.ignore();
 
+    for (int j = 0; j < x; j++) {
+        hobbies[j] = getInput("Podaj zainteresowanie: ");
+    }
     if (infile.is_open()) {
         while (getline(infile, line)) {
             size_t pos = line.find(';');
@@ -350,22 +364,7 @@ int MenuDisplay() {
         try {
             switch (choice) {
                 case 1: {
-                    string name, surname, address, email;
-                    string* hobbies = new string[20];
-                    int x;
-                    cout << "Możesz wpisać \"wyjdź\" w każdym momencie, aby wrócić do menu"<<endl;
-                    name = getInput("Podaj imię: ");
-                    surname = getInput("Podaj nazwisko: ");
-                    address = getInput("Podaj adres: ");
-                    email = getInput("Podaj email: ");
-                    cout << "Ile zainteresowań chcesz dodać: ";
-                    cin >> x;
-                    cin.ignore();
-                    for (int j = 0; j < x; j++) {
-                        hobbies[j] = getInput("Podaj zainteresowanie: ");
-                    }
-                    AddPerson(name, surname, address, email, hobbies);
-                    delete[] hobbies;
+                    AddPerson();
                     break;
                 }
                 case 2: {
