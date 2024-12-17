@@ -130,6 +130,7 @@ void EditPerson(int id) {
                     cout << "Znaleziono rekord: " << line << endl;
 
                     string name, surname, address, email, hobbies;
+                    cout << "Możesz wpisać \"wyjdź\" w każdym momencie, aby wrócić do menu"<<endl;
                     cout << "Podaj nowe dane. Jeśli chcesz zachować istniejące, zostaw pole puste." << endl;
 
                     try {
@@ -264,6 +265,7 @@ void SearchPerson() {
     int choice;
 
     if (infile.is_open()) {
+        cout << "Możesz wpisać \"wyjdź\" w każdym momencie, aby wrócić do menu"<<endl;
         cout << "Wybierz parametr wyszukiwania:" << endl;
         cout << "1. ID" << endl;
         cout << "2. Imię" << endl;
@@ -351,6 +353,7 @@ int MenuDisplay() {
                     string name, surname, address, email;
                     string* hobbies = new string[20];
                     int x;
+                    cout << "Możesz wpisać \"wyjdź\" w każdym momencie, aby wrócić do menu"<<endl;
                     name = getInput("Podaj imię: ");
                     surname = getInput("Podaj nazwisko: ");
                     address = getInput("Podaj adres: ");
