@@ -1,6 +1,7 @@
 #include <fstream>
 #include <iostream>
 #include <string>
+#include <stdexcept>
 
 using namespace std;
 
@@ -12,6 +13,20 @@ struct Person {
     string email;
     string* hobbies = new string[20];
 };
+
+void handleExit(const string& input) {
+    if (input == "wyjdź") {
+        throw runtime_error("Powrót do menu");
+    }
+}
+
+string getInput(const string& prompt) {
+    string input;
+    cout << prompt;
+    getline(cin, input);
+    handleExit(input);
+    return input;
+}
 
 void AddPerson(string name, string surname, string address, string email, string* hobbies) {
     ifstream infile("database.txt");
@@ -47,14 +62,12 @@ void AddPerson(string name, string surname, string address, string email, string
         }
         outfile << "]" << endl;
 
-        cout << "Poprawnie dodano osobę o ID " << newID << " do bazy"<< endl;
+        cout << "Poprawnie dodano osobę o ID " << newID << " do bazy" << endl;
     } else {
         cout << "Wystąpił problem z plikiem" << endl;
     }
     outfile.close();
 }
-
-
 
 void DeletePerson(int id) {
     ifstream infile("database.txt");
@@ -71,13 +84,14 @@ void DeletePerson(int id) {
                     found = true;
                     cout << "Znaleziono rekord: " << line << endl;
                     cout << "Czy na pewno chcesz usunąć ten rekord? (t/n): ";
-                    char choice;
-                    cin >> choice;
-                    if (choice == 'n' || choice == 'N') {
+                    string choice;
+                    getline(cin, choice);
+                    handleExit(choice);
+                    if (choice == "n" || choice == "N") {
                         outfile << line << endl;
                         cout << "Rekord nie został usunięty." << endl;
                         continue;
-                    } else if (choice == 't' || choice == 'T') {
+                    } else if (choice == "t" || choice == "T") {
                         cout << "Rekord został pomyślnie usunięty." << endl;
                         continue;
                     }
@@ -118,16 +132,15 @@ void EditPerson(int id) {
                     string name, surname, address, email, hobbies;
                     cout << "Podaj nowe dane. Jeśli chcesz zachować istniejące, zostaw pole puste." << endl;
 
-                    cout << "Nowe imię: ";
-                    getline(cin, name);
-                    cout << "Nowe nazwisko: ";
-                    getline(cin, surname);
-                    cout << "Nowy adres: ";
-                    getline(cin, address);
-                    cout << "Nowy email: ";
-                    getline(cin, email);
-                    cout << "Nowe zainteresowania (oddzielone przecinkami): ";
-                    getline(cin, hobbies);
+                    try {
+                        name = getInput("Nowe imię: ");
+                        surname = getInput("Nowe nazwisko: ");
+                        address = getInput("Nowy adres: ");
+                        email = getInput("Nowy email: ");
+                        hobbies = getInput("Nowe zainteresowania (oddzielone przecinkami): ");
+                    } catch (runtime_error& e) {
+                        return;
+                    }
 
                     string updatedRecord = to_string(id) + ";";
 
@@ -309,8 +322,10 @@ void SearchPerson() {
 
 int MenuDisplay() {
     int choice;
+    cin.exceptions(ios::failbit);
     do {
-        cout << "Menu: "<< endl;
+        cout << endl;
+        cout << "Menu: " << endl;
         cout << "1. Dodaj osobę do bazy" << endl;
         cout << "2. Usuń osobę z bazy" << endl;
         cout << "3. Edytuj osobę" << endl;
@@ -319,72 +334,72 @@ int MenuDisplay() {
         cout << "6. Wyszukaj osobę" << endl;
         cout << "7. Wyjdź" << endl;
         cout << "Wybór: ";
-        cin >> choice;
-        switch (choice) {
-            case 1: {
-                int id;
-                string name;
-                string surname;
-                string address;
-                string email;
-                string* hobbies = new string[20];
-                int n;
-                int x;
-                cout << "Ilu użytkowników chcesz dodać: ";
-                cin >> n;
-                for (int i = 0; i < n; i++) {
-                    cout << "Podaj imię użytkownika " << i + 1 << ": ";
-                    cin >> name;
-                    cout << "Podaj nazwisko użytkownika " << i + 1 << ": ";
-                    cin >> surname;
-                    cout << "Podaj adres użytkownika " << i + 1 << ": ";
-                    cin >> address;
-                    cout << "Podaj adres email użytkownika " << i + 1 << ": ";
-                    cin >> email;
+
+        try {
+            cin >> choice;
+        } catch (const ios_base::failure& e) {
+            cin.clear();
+            cin.ignore(10000, '\n');
+            cout << "To nie jest liczba. Spróbuj ponownie." << endl;
+            continue;
+        }
+        cin.ignore();
+
+        try {
+            switch (choice) {
+                case 1: {
+                    string name, surname, address, email;
+                    string* hobbies = new string[20];
+                    int x;
+                    name = getInput("Podaj imię: ");
+                    surname = getInput("Podaj nazwisko: ");
+                    address = getInput("Podaj adres: ");
+                    email = getInput("Podaj email: ");
                     cout << "Ile zainteresowań chcesz dodać: ";
                     cin >> x;
+                    cin.ignore();
                     for (int j = 0; j < x; j++) {
-                        cout << "Podaj zainteresowanie " << j + 1 << ": ";
-                        cin >> hobbies[j];
+                        hobbies[j] = getInput("Podaj zainteresowanie: ");
                     }
                     AddPerson(name, surname, address, email, hobbies);
-                    cout << endl;
+                    delete[] hobbies;
+                    break;
                 }
-                delete[] hobbies;
-                break;
+                case 2: {
+                    int id;
+                    cout << "Podaj id osoby do usunięcia: ";
+                    cin >> id;
+                    cin.ignore();
+                    DeletePerson(id);
+                    break;
+                }
+                case 3: {
+                    int id;
+                    cout << "Podaj id osoby do edycji: ";
+                    cin >> id;
+                    cin.ignore();
+                    EditPerson(id);
+                    break;
+                }
+                case 4:
+                    DisplayDatabase();
+                    break;
+                case 5:
+                    GroupByHobbies();
+                    break;
+                case 6: {
+                    SearchPerson();
+                    break;
+                }
+                case 7:
+                    return 0;
+                default:
+                    cout << "Wybrano złą opcję" << endl;
             }
-            case 2: {
-                int id;
-                cout<<"Podaj id osoby do usunięcia: ";
-                cin >> id;
-                DeletePerson(id);
-                break;
-            }
-            case 3: {
-                int id;
-                cout<<"Podaj id osoby do edycji: ";
-                cin >> id;
-                EditPerson(id);
-                break;
-            }
-            case 4:
-                DisplayDatabase();
-                break;
-            case 5:
-                GroupByHobbies();
-                break;
-            case 6: {
-                SearchPerson();
-                break;
-            }
-
-            case 7:
-                return 0;
-            default:
-                cout << "Wybrano złą opcję" << endl;
+        } catch (runtime_error& e) {
+            cout << "Powrót do menu" << endl;
         }
-    }while (choice != 7);
-
+    } while (choice != 7);
 }
 
 int main() {
