@@ -32,56 +32,67 @@ void AddPerson() {
     ifstream infile("database.txt");
     int lastID = 0;
     string line;
-    string name, surname, address, email;
-    string* hobbies = new string[20];
-    int x;
-    cout << "Możesz wpisać \"wyjdź\" w każdym momencie, aby wrócić do menu"<<endl;
-    name = getInput("Podaj imię: ");
-    surname = getInput("Podaj nazwisko: ");
-    address = getInput("Podaj adres: ");
-    email = getInput("Podaj email: ");
-    cout << "Ile zainteresowań chcesz dodać: ";
-    cin >> x;
-    cin.ignore();
 
-    for (int j = 0; j < x; j++) {
-        hobbies[j] = getInput("Podaj zainteresowanie: ");
-    }
-    if (infile.is_open()) {
-        while (getline(infile, line)) {
-            size_t pos = line.find(';');
-            if (pos != string::npos) {
-                lastID = stoi(line.substr(0, pos));
-            }
+    Person person;
+    person.hobbies = new string[20];
+
+    cout << "Możesz wpisać \"wyjdź\" w każdym momencie, aby wrócić do menu" << endl;
+
+    try {
+        person.name = getInput("Podaj imię: ");
+        person.surname = getInput("Podaj nazwisko: ");
+        person.address = getInput("Podaj adres: ");
+        person.email = getInput("Podaj email: ");
+        cout << "Ile zainteresowań chcesz dodać: ";
+        int hobbyCount;
+        cin >> hobbyCount;
+        cin.ignore();
+
+        for (int i = 0; i < hobbyCount; i++) {
+            person.hobbies[i] = getInput("Podaj zainteresowanie: ");
         }
-        infile.close();
-    }
 
-    int newID = lastID + 1;
-
-    ofstream outfile("database.txt", ios::app);
-    if (outfile.is_open()) {
-        outfile << newID << ";"
-                << name << ";"
-                << surname << ";"
-                << address << ";"
-                << email << ";";
-
-        outfile << "[";
-        for (int i = 0; i < 20 && !hobbies[i].empty(); ++i) {
-            outfile << hobbies[i];
-            if (i < 19 && !hobbies[i + 1].empty()) {
-                outfile << ", ";
+        if (infile.is_open()) {
+            while (getline(infile, line)) {
+                size_t pos = line.find(';');
+                if (pos != string::npos) {
+                    lastID = stoi(line.substr(0, pos));
+                }
             }
+            infile.close();
         }
-        outfile << "]" << endl;
 
-        cout << "Poprawnie dodano osobę o ID " << newID << " do bazy" << endl;
-    } else {
-        cout << "Wystąpił problem z plikiem" << endl;
+        person.id = lastID + 1;
+
+        ofstream outfile("database.txt", ios::app);
+        if (outfile.is_open()) {
+            outfile << person.id << ";"
+                    << person.name << ";"
+                    << person.surname << ";"
+                    << person.address << ";"
+                    << person.email << ";";
+
+            outfile << "[";
+            for (int i = 0; i < 20 && !person.hobbies[i].empty(); ++i) {
+                outfile << person.hobbies[i];
+                if (i < 19 && !person.hobbies[i + 1].empty()) {
+                    outfile << ", ";
+                }
+            }
+            outfile << "]" << endl;
+
+            cout << "Poprawnie dodano osobę o ID " << person.id << " do bazy" << endl;
+        } else {
+            cout << "Wystąpił problem z plikiem" << endl;
+        }
+        outfile.close();
+        delete[] person.hobbies;
+    } catch (runtime_error& e) {
+        delete[] person.hobbies;
+        cout << "Operacja została przerwana. " << e.what() << endl;
     }
-    outfile.close();
 }
+
 
 void DeletePerson(int id) {
     ifstream infile("database.txt");
@@ -141,36 +152,93 @@ void EditPerson(int id) {
                 int currentID = stoi(line.substr(0, pos));
                 if (currentID == id) {
                     found = true;
-                    cout << "Znaleziono rekord: " << line << endl;
+                    Person person;
+                    person.id = currentID;
 
-                    string name, surname, address, email, hobbies;
-                    cout << "Możesz wpisać \"wyjdź\" w każdym momencie, aby wrócić do menu"<<endl;
-                    cout << "Podaj nowe dane. Jeśli chcesz zachować istniejące, zostaw pole puste." << endl;
+                    size_t start = pos + 1;
+                    size_t end = line.find(';', start);
+                    person.name = line.substr(start, end - start);
+
+                    start = end + 1;
+                    end = line.find(';', start);
+                    person.surname = line.substr(start, end - start);
+
+                    start = end + 1;
+                    end = line.find(';', start);
+                    person.address = line.substr(start, end - start);
+
+                    start = end + 1;
+                    end = line.find(';', start);
+                    person.email = line.substr(start, end - start);
+
+                    start = line.find('[', end) + 1;
+                    end = line.find(']', start);
+                    string hobbies = line.substr(start, end - start);
+
+                    size_t hobbyStart = 0, hobbyEnd;
+                    int hobbyIndex = 0;
+                    while ((hobbyEnd = hobbies.find(',', hobbyStart)) != string::npos && hobbyIndex < 20) {
+                        person.hobbies[hobbyIndex++] = hobbies.substr(hobbyStart, hobbyEnd - hobbyStart);
+                        hobbyStart = hobbyEnd + 2;
+                    }
+                    if (hobbyStart < hobbies.length()) {
+                        person.hobbies[hobbyIndex++] = hobbies.substr(hobbyStart);
+                    }
+
+                    cout << "Znaleziono rekord: " << line << endl;
+                    cout << "Wprowadź nowe dane (pozostaw puste, aby zachować istniejące)." << endl;
 
                     try {
-                        name = getInput("Nowe imię: ");
-                        surname = getInput("Nowe nazwisko: ");
-                        address = getInput("Nowy adres: ");
-                        email = getInput("Nowy email: ");
-                        hobbies = getInput("Nowe zainteresowania (oddzielone przecinkami): ");
-                    } catch (runtime_error& e) {
+                        string input;
+
+                        input = getInput("Nowe imię: ");
+                        if (!input.empty()) person.name = input;
+
+                        input = getInput("Nowe nazwisko: ");
+                        if (!input.empty()) person.surname = input;
+
+                        input = getInput("Nowy adres: ");
+                        if (!input.empty()) person.address = input;
+
+                        input = getInput("Nowy email: ");
+                        if (!input.empty()) person.email = input;
+
+                        cout << "Nowe zainteresowania (oddzielone przecinkami): ";
+                        getline(cin, input);
+                        if (!input.empty()) {
+                            size_t hobbyStart = 0, hobbyEnd;
+                            hobbyIndex = 0;
+                            while ((hobbyEnd = input.find(',', hobbyStart)) != string::npos && hobbyIndex < 20) {
+                                person.hobbies[hobbyIndex++] = input.substr(hobbyStart, hobbyEnd - hobbyStart);
+                                hobbyStart = hobbyEnd + 2;
+                            }
+                            if (hobbyStart < input.length()) {
+                                person.hobbies[hobbyIndex++] = input.substr(hobbyStart);
+                            }
+                            for (int i = hobbyIndex; i < 20; ++i) {
+                                person.hobbies[i].clear();
+                            }
+                        }
+                        delete[] person.hobbies;
+                    } catch (runtime_error&) {
+                        delete[] person.hobbies;
                         return;
                     }
 
-                    string updatedRecord = to_string(id) + ";";
+                    outfile << person.id << ";"
+                            << person.name << ";"
+                            << person.surname << ";"
+                            << person.address << ";"
+                            << person.email << ";[";
 
-                    size_t firstSemicolon = line.find(';');
-                    size_t secondSemicolon = line.find(';', firstSemicolon + 1);
-                    size_t thirdSemicolon = line.find(';', secondSemicolon + 1);
-                    size_t fourthSemicolon = line.find(';', thirdSemicolon + 1);
+                    for (int i = 0; i < 20 && !person.hobbies[i].empty(); ++i) {
+                        outfile << person.hobbies[i];
+                        if (i < 19 && !person.hobbies[i + 1].empty()) {
+                            outfile << ", ";
+                        }
+                    }
+                    outfile << "]" << endl;
 
-                    updatedRecord += (name.empty() ? line.substr(firstSemicolon + 1, secondSemicolon - firstSemicolon - 1) : name) + ";";
-                    updatedRecord += (surname.empty() ? line.substr(secondSemicolon + 1, thirdSemicolon - secondSemicolon - 1) : surname) + ";";
-                    updatedRecord += (address.empty() ? line.substr(thirdSemicolon + 1, fourthSemicolon - thirdSemicolon - 1) : address) + ";";
-                    updatedRecord += (email.empty() ? line.substr(fourthSemicolon + 1, line.find(';', fourthSemicolon + 1) - fourthSemicolon - 1) : email) + ";";
-                    updatedRecord += (hobbies.empty() ? line.substr(line.find('[', fourthSemicolon) + 1, line.find(']') - line.find('[', fourthSemicolon) - 1) : hobbies);
-
-                    outfile << updatedRecord << endl;
                     cout << "Rekord został zaktualizowany." << endl;
                     continue;
                 }
@@ -191,6 +259,7 @@ void EditPerson(int id) {
         cout << "Wystąpił problem z otwarciem pliku." << endl;
     }
 }
+
 
 
 void DisplayDatabase() {
@@ -292,7 +361,7 @@ void SearchPerson() {
 
         cout << "Podaj wartość do wyszukania: ";
         getline(cin, searchTerm);
-
+        cout << endl;
         bool found = false;
         cout << "Wyniki wyszukiwania:" << endl;
         while (getline(infile, line)) {
