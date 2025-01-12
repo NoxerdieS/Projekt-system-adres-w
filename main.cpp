@@ -82,10 +82,10 @@ void AddPerson() {
             outfile << "]" << endl;
 
             cout << "Poprawnie dodano osobę o ID " << person.id << " do bazy" << endl;
+            outfile.close();
         } else {
             cout << "Wystąpił problem z plikiem" << endl;
         }
-        outfile.close();
         delete[] person.hobbies;
     } catch (runtime_error& e) {
         delete[] person.hobbies;
@@ -178,11 +178,18 @@ void EditPerson(int id) {
                     size_t hobbyStart = 0, hobbyEnd;
                     int hobbyIndex = 0;
                     while ((hobbyEnd = hobbies.find(',', hobbyStart)) != string::npos && hobbyIndex < 20) {
-                        person.hobbies[hobbyIndex++] = hobbies.substr(hobbyStart, hobbyEnd - hobbyStart);
-                        hobbyStart = hobbyEnd + 2;
+                        string hobby = hobbies.substr(hobbyStart, hobbyEnd - hobbyStart);
+                        hobby.erase(0, hobby.find_first_not_of(" "));
+                        hobby.erase(hobby.find_last_not_of(" ") + 1);
+
+                        person.hobbies[hobbyIndex++] = hobby;
+                        hobbyStart = hobbyEnd + 1;
                     }
                     if (hobbyStart < hobbies.length()) {
-                        person.hobbies[hobbyIndex++] = hobbies.substr(hobbyStart);
+                        string hobby = hobbies.substr(hobbyStart);
+                        hobby.erase(0, hobby.find_first_not_of(" "));
+                        hobby.erase(hobby.find_last_not_of(" ") + 1);
+                        person.hobbies[hobbyIndex++] = hobby;
                     }
 
                     cout << "Znaleziono rekord: " << line << endl;
@@ -205,25 +212,34 @@ void EditPerson(int id) {
 
                         cout << "Nowe zainteresowania (oddzielone przecinkami): ";
                         getline(cin, input);
+
                         if (!input.empty()) {
                             size_t hobbyStart = 0, hobbyEnd;
                             hobbyIndex = 0;
                             while ((hobbyEnd = input.find(',', hobbyStart)) != string::npos && hobbyIndex < 20) {
-                                person.hobbies[hobbyIndex++] = input.substr(hobbyStart, hobbyEnd - hobbyStart);
-                                hobbyStart = hobbyEnd + 2;
+                                string hobby = input.substr(hobbyStart, hobbyEnd - hobbyStart);
+                                hobby.erase(0, hobby.find_first_not_of(" "));
+                                hobby.erase(hobby.find_last_not_of(" ") + 1);
+
+                                person.hobbies[hobbyIndex++] = hobby;
+                                hobbyStart = hobbyEnd + 1;
                             }
                             if (hobbyStart < input.length()) {
-                                person.hobbies[hobbyIndex++] = input.substr(hobbyStart);
+                                string hobby = input.substr(hobbyStart);
+                                hobby.erase(0, hobby.find_first_not_of(" "));
+                                hobby.erase(hobby.find_last_not_of(" ") + 1);
+                                person.hobbies[hobbyIndex++] = hobby;
                             }
+
                             for (int i = hobbyIndex; i < 20; ++i) {
                                 person.hobbies[i].clear();
                             }
                         }
-                        delete[] person.hobbies;
                     } catch (runtime_error&) {
                         delete[] person.hobbies;
                         return;
                     }
+
 
                     outfile << person.id << ";"
                             << person.name << ";"
