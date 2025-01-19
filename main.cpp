@@ -303,6 +303,7 @@ void DisplayDatabase() {
     }
 }
 
+
 void GroupByHobbies() {
     ifstream infile("database.txt");
     const int MAX_HOBBIES = 100;
