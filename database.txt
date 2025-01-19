@@ -8,4 +8,4 @@
 8;Agnieszka;Kamińska;ul. Akacjowa 20, Szczecin;agnieszka.kaminska@example.com;[Muzyka, Czytanie, Podróże]
 9;Michał;Wojciechowski;ul. Jesionowa 18, Toruń;michal.wojciechowski@example.com;[Turystyka, Góry, Kino]
 10;Ewa;Kaczmarek;ul. Grabowa 14, Lublin;ewa.kaczmarek@example.com;[Taniec, Muzyka, Gotowanie]
-11;Łukasz;Karolak;ul. Jarzębinowa 6, Rzeszów;lukasz.pawlak@example.com;[buh, buh, buh]
+11;Łukasz;Karolak;Kwiatowa 8;lukasz.pawlak@example.com;[:3, :3, :3]

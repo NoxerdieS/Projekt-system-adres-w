@@ -180,6 +180,7 @@ void updatePersonData(Person& person) {
                 person.hobbies[i].clear();
             }
         }
+        cout << "Rekord został zaktualizowany." << endl;
     } catch (runtime_error&) {
         cout << "Przerwano edycję danych." << endl;
     }
@@ -214,22 +215,17 @@ Person parsePerson(const string& line) {
     start = line.find('[', end) + 1;
     end = line.find(']', start);
     string hobbies = line.substr(start, end - start);
+    hobbies += ',';
 
     size_t hobbyStart = 0, hobbyEnd;
     int hobbyIndex = 0;
+
     while ((hobbyEnd = hobbies.find(',', hobbyStart)) != string::npos && hobbyIndex < 20) {
         string hobby = hobbies.substr(hobbyStart, hobbyEnd - hobbyStart);
         hobby.erase(0, hobby.find_first_not_of(" "));
         hobby.erase(hobby.find_last_not_of(" ") + 1);
-
         person.hobbies[hobbyIndex++] = hobby;
         hobbyStart = hobbyEnd + 1;
-    }
-    if (hobbyStart < hobbies.length()) {
-        string hobby = hobbies.substr(hobbyStart);
-        hobby.erase(0, hobby.find_first_not_of(" "));
-        hobby.erase(hobby.find_last_not_of(" ") + 1);
-        person.hobbies[hobbyIndex++] = hobby;
     }
 
     return person;
@@ -241,7 +237,7 @@ void EditPerson(int id) {
     ofstream outfile("temp.txt");
     string line;
     bool found = false;
-
+    cout << "Możesz wpisać \"wyjdź\" w każdym momencie, aby wrócić do menu" << endl;
     if (infile.is_open() && outfile.is_open()) {
         while (getline(infile, line)) {
             size_t pos = line.find(';');
@@ -270,12 +266,12 @@ void EditPerson(int id) {
                     }
                     outfile << "]" << endl;
 
-                    cout << "Rekord został zaktualizowany." << endl;
+
                     delete[] person.hobbies;
                     continue;
                 }
+                outfile << line << endl;
             }
-            outfile << line << endl;
         }
         infile.close();
         outfile.close();
@@ -370,30 +366,31 @@ void GroupByHobbies() {
     }
 }
 
-
-
 void SearchPerson() {
     ifstream infile("database.txt");
-    string searchTerm, line;
-    int choice;
+    if (!infile.is_open()) {
+        cout << "Wystąpił problem z otwarciem pliku." << endl;
+        return;
+    }
 
-    if (infile.is_open()) {
-        cout << "Możesz wpisać \"wyjdź\" w każdym momencie, aby wrócić do menu"<<endl;
-        cout << "Wybierz parametr wyszukiwania:" << endl;
-        cout << "1. ID" << endl;
-        cout << "2. Imię" << endl;
-        cout << "3. Nazwisko" << endl;
-        cout << "4. Email" << endl;
-        cout << "5. Inne (adres lub zainteresowania)" << endl;
-        cout << "Twój wybór: ";
-        cin >> choice;
-        cin.ignore();
+    try {
+        cout << "Możesz wpisać \"wyjdź\" w każdym momencie, aby wrócić do menu" << endl;
 
-        cout << "Podaj wartość do wyszukania: ";
-        getline(cin, searchTerm);
+        int choice = stoi(getInput("Wybierz parametr wyszukiwania:\n"
+                                   "1. ID\n"
+                                   "2. Imię\n"
+                                   "3. Nazwisko\n"
+                                   "4. Email\n"
+                                   "5. Inne (adres lub zainteresowania)\n"
+                                   "Twój wybór: "));
+
+        string searchTerm = getInput("Podaj wartość do wyszukania: ");
         cout << endl;
+
         bool found = false;
         cout << "Wyniki wyszukiwania:" << endl;
+
+        string line;
         while (getline(infile, line)) {
             bool matches = false;
             switch (choice) {
@@ -410,7 +407,7 @@ void SearchPerson() {
                 case 4:
                 case 5:
                     matches = (line.find(searchTerm) != string::npos);
-                    break;
+                break;
                 default:
                     cout << "Niepoprawny wybór." << endl;
                 infile.close();
@@ -426,13 +423,12 @@ void SearchPerson() {
         if (!found) {
             cout << "Brak wyników dla podanego kryterium." << endl;
         }
+
         infile.close();
-    } else {
-        cout << "Wystąpił problem z otwarciem pliku." << endl;
+    } catch (const runtime_error& e) {
+        cout << "Powrót do menu" << endl;
     }
 }
-
-
 
 int MenuDisplay() {
     int choice;
