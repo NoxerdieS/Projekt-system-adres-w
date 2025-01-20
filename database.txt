@@ -7,5 +7,6 @@
 7;Tomasz;Dąbrowski;ul. Kasztanowa 10, Łódź;tomasz.dabrowski@example.com;[Fotografia, Programowanie, Kino]
 8;Agnieszka;Kamińska;ul. Akacjowa 20, Szczecin;agnieszka.kaminska@example.com;[Muzyka, Czytanie, Podróże]
 9;Michał;Wojciechowski;ul. Jesionowa 18, Toruń;michal.wojciechowski@example.com;[Turystyka, Góry, Kino]
-10;Ewa;Kaczmarek;ul. Grabowa 14, Lublin;ewa.kaczmarek@example.com;[Taniec, Muzyka, Gotowanie]
-11;Łukasz;Karolak;Kwiatowa 8;lukasz.pawlak@example.com;[:3, :3, :3]
+10;Anna;Kaczmarek;ul. Grabowa 14, Lublin;ewa.kaczmarek@example.com;[Taniec, Muzyka, Gotowanie]
+11;ds;s;s;s;[w, w, w]
+12;s;s;s;s;[]
