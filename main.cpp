@@ -15,11 +15,20 @@ struct Person {
     string* hobbies = new string[20];
 };
 
-void GetPersonId(int &id);
 void handleExit(const string& input);
 string getInput(const string& prompt);
 int getIntInput(const string& prompt);
 
+void GetPersonId(int &id) {
+    cout << "Podaj id osoby: ";
+    cin >> id;
+    if (cin.fail()) {
+        cin.clear();
+        cin.ignore(2000000, '\n');
+        throw runtime_error("Nieprawidłowy format ID. Musi to być liczba.");
+    }
+    cin.ignore(2000000, '\n');
+}
 
 Person generatePerson() {
     Person person;

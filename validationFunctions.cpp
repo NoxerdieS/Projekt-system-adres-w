@@ -4,16 +4,7 @@
 
 using namespace std;
 
-void GetPersonId(int &id) {
-    cout << "Podaj id osoby: ";
-    cin >> id;
-    if (cin.fail()) {
-        cin.clear();
-        cin.ignore(2000000, '\n');
-        throw runtime_error("Nieprawidłowy format ID. Musi to być liczba.");
-    }
-    cin.ignore(2000000, '\n');
-}
+
 
 void handleExit(const string& input) {
     if (input == "wyjdź") {
