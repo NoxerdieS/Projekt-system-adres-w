@@ -2,7 +2,7 @@
 #include <iostream>
 #include <string>
 #include <stdexcept>
-#include "validationFunctions.cpp"
+// #include "validationFunctions.cpp"
 
 using namespace std;
 
@@ -333,69 +333,106 @@ void DisplayDatabase() {
 }
 
 
-void GroupByHobbies() {
-    ifstream infile("database.txt");
-    const int MAX_HOBBIES = 100;
-    const int MAX_PEOPLE = 100;
+void ParseLine(const string& line, string hobbies[], string groupedPeople[][100], int hobbyCounts[], int& hobbyIndex, int maxPeople) {
+    size_t idPos = line.find(';');
+    size_t namePos = line.find(';', idPos + 1);
+    size_t surnamePos = line.find(';', namePos + 1);
+    size_t hobbyStart = line.find('[', idPos);
+    size_t hobbyEnd = line.find(']', hobbyStart);
 
-    string hobbies[MAX_HOBBIES];
-    string groupedPeople[MAX_HOBBIES][MAX_PEOPLE];
-    int hobbyCounts[MAX_HOBBIES] = {0};
+    if (hobbyStart != string::npos && hobbyEnd != string::npos) {
+        string idName = line.substr(0, surnamePos + 1);
+        string hobbiesList = line.substr(hobbyStart + 1, hobbyEnd - hobbyStart - 1);
+
+        size_t start = 0, end;
+        while ((end = hobbiesList.find(',', start)) != string::npos || start < hobbiesList.length()) {
+            string hobby = hobbiesList.substr(start, (end == string::npos ? hobbiesList.length() : end) - start);
+            hobby = hobby.substr(hobby.find_first_not_of(" "));
+
+            bool found = false;
+            int foundIndex = -1;
+            for (int i = 0; i < hobbyIndex; ++i) {
+                if (hobbies[i] == hobby) {
+                    found = true;
+                    foundIndex = i;
+                    break;
+                }
+            }
+
+            if (!found) {
+                hobbies[hobbyIndex] = hobby;
+                foundIndex = hobbyIndex++;
+            }
+
+            if (hobbyCounts[foundIndex] < maxPeople) {
+                groupedPeople[foundIndex][hobbyCounts[foundIndex]++] = idName;
+            }
+
+            if (end == string::npos) break;
+            start = end + 1;
+        }
+    }
+}
+
+void DisplayGroupedHobbies(const string hobbies[], const string groupedPeople[][100], const int hobbyCounts[], int hobbyIndex) {
+    cout << "Grupowanie według zainteresowań:" << endl;
+    for (int i = 0; i < hobbyIndex; ++i) {
+        cout << hobbies[i] << ":" << endl;
+        for (int j = 0; j < hobbyCounts[i]; ++j) {
+            cout << "  - " << groupedPeople[i][j] << endl;
+        }
+    }
+}
+
+void GroupByHobbies() {
+    const int maxHobbies = 100;
+    const int maxPeople = 100;
+
+    string hobbies[maxHobbies];
+    string groupedPeople[maxHobbies][maxPeople];
+    int hobbyCounts[maxHobbies] = {0};
     int hobbyIndex = 0;
+
+    ifstream infile("database.txt");
 
     if (infile.is_open()) {
         string line;
-
         while (getline(infile, line)) {
-            size_t idPos = line.find(';');
-            size_t hobbyStart = line.find('[', idPos);
-            size_t hobbyEnd = line.find(']', hobbyStart);
-
-            if (hobbyStart != string::npos && hobbyEnd != string::npos) {
-                string idName = line.substr(0, line.find(';', idPos + 1));
-                string hobbiesList = line.substr(hobbyStart + 1, hobbyEnd - hobbyStart - 1);
-
-                size_t start = 0, end;
-                while ((end = hobbiesList.find(',', start)) != string::npos || start < hobbiesList.length()) {
-                    string hobby = hobbiesList.substr(start, (end == string::npos ? hobbiesList.length() : end) - start);
-                    hobby = hobby.substr(hobby.find_first_not_of(" "));
-
-                    bool found = false;
-                    int foundIndex = -1;
-                    for (int i = 0; i < hobbyIndex; ++i) {
-                        if (hobbies[i] == hobby) {
-                            found = true;
-                            foundIndex = i;
-                            break;
-                        }
-                    }
-
-                    if (!found) {
-                        hobbies[hobbyIndex] = hobby;
-                        foundIndex = hobbyIndex++;
-                    }
-
-                    groupedPeople[foundIndex][hobbyCounts[foundIndex]++] = idName;
-
-                    if (end == string::npos) break;
-                    start = end + 1;
-                }
-            }
+            ParseLine(line, hobbies, groupedPeople, hobbyCounts, hobbyIndex, maxPeople);
         }
         infile.close();
-
-        cout << "Grupowanie według zainteresowań:" << endl;
-        for (int i = 0; i < hobbyIndex; ++i) {
-            cout << hobbies[i] << ":" << endl;
-            for (int j = 0; j < hobbyCounts[i]; ++j) {
-                cout << "  - " << groupedPeople[i][j] << endl;
-            }
-        }
+        DisplayGroupedHobbies(hobbies, groupedPeople, hobbyCounts, hobbyIndex);
     } else {
         cout << "Wystąpił problem z otwarciem pliku." << endl;
     }
 }
 
+
+bool ProcessLine(const string& line, int choice, const string& searchTerm) {
+    bool matches = false;
+
+    switch (choice) {
+        case 1: {
+            size_t pos = line.find(';');
+            if (pos != string::npos) {
+                string id = line.substr(0, pos);
+                matches = (id == searchTerm);
+            }
+            break;
+        }
+        case 2:
+        case 3:
+        case 4:
+        case 5:
+            matches = (line.find(searchTerm) != string::npos);
+        break;
+        default:
+            cout << "Niepoprawny wybór." << endl;
+        throw runtime_error("Niepoprawny wybór");
+    }
+
+    return matches;
+}
 void SearchPerson() {
     ifstream infile("database.txt");
     if (!infile.is_open()) {
@@ -405,7 +442,7 @@ void SearchPerson() {
 
     try {
         cout << "Możesz wpisać \"wyjdź\" w każdym momencie, aby wrócić do menu" << endl;
-
+        cin.sync();
         int choice = getIntInput("Wybierz parametr wyszukiwania:\n"
                                    "1. ID\n"
                                    "2. Imię\n"
@@ -422,29 +459,7 @@ void SearchPerson() {
 
         string line;
         while (getline(infile, line)) {
-            bool matches = false;
-            switch (choice) {
-                case 1: {
-                    size_t pos = line.find(';');
-                    if (pos != string::npos) {
-                        string id = line.substr(0, pos);
-                        matches = (id == searchTerm);
-                    }
-                    break;
-                }
-                case 2:
-                case 3:
-                case 4:
-                case 5:
-                    matches = (line.find(searchTerm) != string::npos);
-                break;
-                default:
-                    cout << "Niepoprawny wybór." << endl;
-                infile.close();
-                return;
-            }
-
-            if (matches) {
+            if (ProcessLine(line, choice, searchTerm)) {
                 cout << line << endl;
                 found = true;
             }
@@ -455,8 +470,11 @@ void SearchPerson() {
         }
 
         infile.close();
-    } catch (const runtime_error& e) {
-        cout << "Powrót do menu" << endl;
+    } catch(exception &err) {
+        if (string(err.what()) != "stoi") {
+            throw runtime_error("Powrót do menu");
+        }
+        cout << "Podano złą wartość" << endl;
     }
 }
 

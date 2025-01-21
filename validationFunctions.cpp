@@ -4,8 +4,6 @@
 
 using namespace std;
 
-
-
 void handleExit(const string& input) {
     if (input == "wyjdź") {
         throw runtime_error("Powrót do menu");
