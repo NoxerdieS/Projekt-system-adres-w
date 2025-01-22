@@ -7,7 +7,6 @@
 
 using namespace std;
 
-
 void MenuDisplay(int &choice) {
     cout << endl;
     cout << "Menu: " << endl;
