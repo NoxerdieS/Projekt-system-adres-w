@@ -79,7 +79,7 @@ void AddPerson() {
                     << person.address << ";"
                     << person.email << ";[";
 
-            for (int i = 0; i < 20 && !person.hobbies[i].empty(); ++i) {
+            for (int i = 0; i < 20 && !person.hobbies[i].empty(); i++) {
                 outfile << person.hobbies[i];
                 if (i < 19 && !person.hobbies[i + 1].empty()) {
                     outfile << ", ";
@@ -90,6 +90,7 @@ void AddPerson() {
             cout << "Poprawnie dodano osobę o ID " << person.id << " do bazy" << endl;
             outfile.close();
         } else {
+            delete[] person.hobbies;
             throw runtime_error("Wystąpił problem z zapisem do pliku.");
         }
 
@@ -98,6 +99,29 @@ void AddPerson() {
     } catch (runtime_error& e) {
         cout << "Operacja została przerwana. " << endl;
     }
+}
+
+void ProcessLineToDelete(const string& line, ofstream& outfile, int id, bool& found) {
+    size_t pos = line.find(';');
+    if (pos != string::npos) {
+        int currentID = stoi(line.substr(0, pos));
+        if (currentID == id) {
+            found = true;
+            cout << "Znaleziono rekord: " << line << endl;
+            cout << "Czy na pewno chcesz usunąć ten rekord? (t/n): ";
+            string choice;
+            getline(cin, choice);
+            handleExit(choice);
+            if (choice == "n" || choice == "N") {
+                outfile << line << endl;
+                cout << "Rekord nie został usunięty." << endl;
+            } else if (choice == "t" || choice == "T") {
+                cout << "Rekord został pomyślnie usunięty." << endl;
+            }
+            return;
+        }
+    }
+    outfile << line << endl;
 }
 
 void DeletePerson() {
@@ -110,27 +134,7 @@ void DeletePerson() {
 
     if (infile.is_open() && outfile.is_open()) {
         while (getline(infile, line)) {
-            size_t pos = line.find(';');
-            if (pos != string::npos) {
-                int currentID = stoi(line.substr(0, pos));
-                if (currentID == id) {
-                    found = true;
-                    cout << "Znaleziono rekord: " << line << endl;
-                    cout << "Czy na pewno chcesz usunąć ten rekord? (t/n): ";
-                    string choice;
-                    getline(cin, choice);
-                    handleExit(choice);
-                    if (choice == "n" || choice == "N") {
-                        outfile << line << endl;
-                        cout << "Rekord nie został usunięty." << endl;
-                        continue;
-                    } else if (choice == "t" || choice == "T") {
-                        cout << "Rekord został pomyślnie usunięty." << endl;
-                        continue;
-                    }
-                }
-            }
-            outfile << line << endl;
+            ProcessLineToDelete(line, outfile, id, found);
         }
         infile.close();
         outfile.close();
