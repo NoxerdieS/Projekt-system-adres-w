@@ -1,4 +1,4 @@
-1;Mateusz;Kowalski;ul. Lipowa 5, Warszawa;jan.kowalski@example.com;Czytanie, Programowanie, Turystyka
+1;Mateusz;Kowalski;ul. Lipowa 5, Warszawa;jan.kowalski@example.com;[Czytanie, Programowanie, Turystyka]
 2;Anna;Nowak;ul. Klonowa 12, Kraków;anna.nowak@example.com;[Muzyka, Gotowanie, Fotografia]
 3;Piotr;Wiśniewski;ul. Dębowa 8, Gdańsk;piotr.wisniewski@example.com;[Kolarstwo, Wędkowanie, Góry]
 4;Maria;Zielińska;ul. Brzozowa 15, Wrocław;maria.zielinska@example.com;[Taniec, Sztuka, Kino]
@@ -6,7 +6,5 @@
 6;Magdalena;Wiśniewska;ul. Świerkowa 7, Katowice;magdalena.wisniewska@example.com;[Jazda na rowerze, Gotowanie, Turystyka]
 7;Tomasz;Dąbrowski;ul. Kasztanowa 10, Łódź;tomasz.dabrowski@example.com;[Fotografia, Programowanie, Kino]
 8;Agnieszka;Kamińska;ul. Akacjowa 20, Szczecin;agnieszka.kaminska@example.com;[Muzyka, Czytanie, Podróże]
-9;Michał;Wojciechowski;ul. Jesionowa 18, Toruń;michal.wojciechowski@example.com;[Turystyka, Góry, Kino]
+9;Michał;Kowalski;ul. Jesionowa 18, Toruń;michal.wojciechowski@example.com;[Turystyka, Góry, Kino]
 10;Anna;Kaczmarek;ul. Grabowa 14, Lublin;ewa.kaczmarek@example.com;[Taniec, Muzyka, Gotowanie]
-11;ds;s;s;s;[w, w, w]
-12;s;s;s;s;[]
