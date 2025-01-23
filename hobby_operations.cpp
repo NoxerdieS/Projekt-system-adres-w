@@ -21,7 +21,7 @@ void ParseLine(const string& line, string hobbies[], string groupedPeople[][100]
 
             bool found = false;
             int foundIndex = -1;
-            for (int i = 0; i < hobbyIndex; ++i) {
+            for (int i = 0; i < hobbyIndex; i++) {
                 if (hobbies[i] == hobby) {
                     found = true;
                     foundIndex = i;
