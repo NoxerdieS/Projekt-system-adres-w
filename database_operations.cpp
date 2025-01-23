@@ -343,22 +343,22 @@ bool ProcessLine(const string& line, int choice, const string& searchTerm) {
     switch (choice) {
         case 1:
             matches = (id == searchTerm);
-        break;
+            break;
         case 2:
             matches = (name == searchTerm);
-        break;
+            break;
         case 3:
             matches = (surname == searchTerm);
-        break;
+            break;
         case 4:
             matches = (email == searchTerm);
-        break;
+            break;
         case 5:
             matches = (address == searchTerm || hobbies.find(searchTerm) != string::npos);
-        break;
+            break;
         default:
             cout << "Niepoprawny wybór." << endl;
-        throw runtime_error("Niepoprawny wybór");
+            throw runtime_error("Niepoprawny wybór");
     }
 
     return matches;
