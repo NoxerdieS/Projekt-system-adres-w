@@ -354,7 +354,7 @@ bool ProcessLine(const string& line, int choice, const string& searchTerm) {
             matches = (email == searchTerm);
             break;
         case 5:
-            matches = (address == searchTerm || hobbies.find(searchTerm) != string::npos);
+            matches = (address.find(searchTerm) != string::npos || hobbies.find(searchTerm) != string::npos);
             break;
         default:
             cout << "Niepoprawny wybór." << endl;
